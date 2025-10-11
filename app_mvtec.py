@@ -32,7 +32,7 @@ def download_file(url, filename):
 def load_model(num_classes_param):
     """Loads the ResNet50 model, downloading it if necessary."""
     model_path = "resnet50_mvtec_20epochs.pth"
-    # IMPORTANT: This is the correct direct download link for your model
+    # This is the correct direct download link for your model
     model_url = "https://huggingface.co/Baji123/resnet50_mvtec/resolve/main/resnet50_mvtec_20epochs.pth"
     
     download_file(model_url, model_path)
