@@ -1,0 +1,8 @@
+torch
+torchvision
+Pillow
+streamlit
+scikit-learn
+matplotlib
+seaborn
+tqdm
