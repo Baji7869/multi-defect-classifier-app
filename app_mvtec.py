@@ -40,25 +40,27 @@ def download_file(url, filename):
 
 
 # -------------------------------\n# Load the trained model\n# -------------------------------
+
 @st.cache_resource
 def load_model():
     model_path = "resnet50_mvtec_20epochs.pth"
-    # This is your link!
     model_url = "https://huggingface.co/Baji123/resnet50_mvtec/resolve/main/resnet50_mvtec_20epochs.pth"
 
-    # Download the model from Hugging Face if it doesn't exist
+    # Add a message before the download
+    st.info("🚀 First-time setup: Downloading the model... This may take a few minutes.")
+
     download_file(model_url, model_path)
-    
-    # Use num_classes which was defined earlier when loading classes.json
-    model = models.resnet50(weights=None) # Use weights=None for custom training
+
+    # Add a message after the download
+    st.info("✅ Download complete. Loading model into memory...")
+
+    model = models.resnet50(weights=None)
     model.fc = nn.Linear(model.fc.in_features, num_classes)
     
-    if not os.path.exists(model_path):
-        st.error(f"Model file not found. Failed to download from {model_url}")
-        st.stop()
-        
     model.load_state_dict(torch.load(model_path, map_location="cpu"))
     model.eval()
+    
+    # Add a final success message
+    st.success("🎉 Model loaded successfully! The app is ready.")
+    
     return model
-
-# ... (the rest of your script, including the UI part, stays the same) ...
