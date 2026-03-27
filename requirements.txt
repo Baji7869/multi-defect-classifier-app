@@ -1,8 +1,8 @@
 streamlit
 torch
 torchvision
-Pillow
-requests
-opencv-python
-matplotlib
+pillow
 numpy
+matplotlib
+opencv-python-headless
+requests
