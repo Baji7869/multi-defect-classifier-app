@@ -103,24 +103,38 @@ class UNet(nn.Module):
 @st.cache_resource
 def load_unet():
     """
-    Loads U-Net weights from HuggingFace.
-    Upload your trained unet_mvtec.pth to:
-      https://huggingface.co/Baji123/resnet50_mvtec/resolve/main/unet_mvtec.pth
-    and this will auto-download it.
-    Returns (model, True) if loaded, (None, False) if not available.
+    Loads U-Net weights from HuggingFace (Baji123/resnet50_mvtec).
+    Returns (model, True) if loaded, (None, False) if unavailable.
     """
     unet_path = "unet_mvtec.pth"
     unet_url  = "https://huggingface.co/Baji123/resnet50_mvtec/resolve/main/unet_mvtec.pth"
 
     if not os.path.exists(unet_path):
         try:
-            with st.spinner("Downloading U-Net segmentation model..."):
-                r = requests.get(unet_url, stream=True, timeout=15)
+            st.info("Downloading U-Net segmentation model (124 MB) — please wait...")
+            progress_bar = st.progress(0, text="Starting download...")
+            # No timeout: 124 MB file needs time on cold start
+            with requests.get(unet_url, stream=True, timeout=None) as r:
                 r.raise_for_status()
+                total = int(r.headers.get("content-length", 0))
+                downloaded = 0
                 with open(unet_path, "wb") as f:
-                    for chunk in r.iter_content(chunk_size=8192):
-                        f.write(chunk)
-        except Exception:
+                    for chunk in r.iter_content(chunk_size=65536):
+                        if chunk:
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            if total:
+                                pct = downloaded / total
+                                mb  = downloaded / 1_048_576
+                                progress_bar.progress(
+                                    pct,
+                                    text=f"Downloading U-Net... {mb:.1f} MB / {total/1_048_576:.1f} MB"
+                                )
+            progress_bar.progress(1.0, text="Download complete!")
+        except Exception as e:
+            st.error(f"U-Net download failed: {e}")
+            if os.path.exists(unet_path):
+                os.remove(unet_path)
             return None, False
 
     try:
@@ -128,7 +142,8 @@ def load_unet():
         unet.load_state_dict(torch.load(unet_path, map_location="cpu"))
         unet.eval()
         return unet, True
-    except Exception:
+    except Exception as e:
+        st.error(f"U-Net load failed: {e}")
         return None, False
 
 # ---
